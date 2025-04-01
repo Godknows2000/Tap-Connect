@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "703810466342",
+    "project_id": "beer-7b5b5",
+    "storage_bucket": "beer-7b5b5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:703810466342:android:07b431f955a29d78d32ce7",
+        "android_client_info": {
+          "package_name": "com.example.tapconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4NKMa2Yic804xVccF1755x_p_W04XCCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

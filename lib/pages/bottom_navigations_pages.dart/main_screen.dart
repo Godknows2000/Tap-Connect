@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:tapconnect/constants.dart';
+import 'package:tapconnect/contollers/firebase_controller.dart';
 import 'package:tapconnect/pages/bottom_navigations_pages.dart/activity_page.dart';
 import 'package:tapconnect/pages/bottom_navigations_pages.dart/notification_page.dart';
 import 'package:tapconnect/pages/bottom_navigations_pages.dart/profile_page.dart';
@@ -21,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
     const ShopScreen(),
     const HomeScreen(),
     const NotificationsScreen(),
-    const ProfileScreen(),
+    ProfileScreen(),
   ];
 
   void _onTabTapped(int index) {
@@ -36,7 +39,7 @@ class _MainScreenState extends State<MainScreen> {
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFF1A1A1A),
-        selectedItemColor: const Color(0xFFFFD700), // Golden for selected
+        selectedItemColor: const Color(primaryColor), // Golden for selected
         unselectedItemColor: Colors.black,
         currentIndex: _currentIndex,
         items: const [

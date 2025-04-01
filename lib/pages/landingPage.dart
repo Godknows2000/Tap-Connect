@@ -80,8 +80,7 @@ class LandingPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const SignupScreen()),
+                        MaterialPageRoute(builder: (context) => SignupScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -103,8 +102,7 @@ class LandingPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
                       );
                     },
                     style: OutlinedButton.styleFrom(

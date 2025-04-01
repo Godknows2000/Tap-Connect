@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tapconnect/constants.dart';
+import 'package:tapconnect/contollers/auth_controller.dart';
 import 'package:tapconnect/pages/authentication/signupscreen.dart';
 import 'package:tapconnect/pages/bottom_navigations_pages.dart/main_screen.dart';
-import 'package:tapconnect/pages/homeScreen.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class LoginScreen extends GetView<AuthController> {
+  final TextEditingController resetEmailController = TextEditingController();
+  final RxBool obscureText = true.obs;
+
+  LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Get.put(
+        AuthController()); // Consider moving this to a higher level if already initialized elsewhere
     return Scaffold(
-      backgroundColor: const Color(secondaryColor), // Golden background
+      backgroundColor: const Color(secondaryColor),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -18,19 +24,17 @@ class LoginScreen extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Card(
-                elevation: 8.0, // Slight elevation for shadow
+                elevation: 8.0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
-                color: Colors.white, // White background for the card
+                color: Colors.white,
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize:
-                        MainAxisSize.min, // Card takes only the space it needs
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Logo
                       Container(
                         width: 100,
                         height: 100,
@@ -41,13 +45,12 @@ class LoginScreen extends StatelessWidget {
                         child: const Icon(
                           Icons.person,
                           size: 60,
-                          color: Color(0xFF8F2B08), // Beer color for the icon
+                          color: Color(0xFF8F2B08),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Title
                       const Text(
-                        'Login Account',
+                        'Login',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -55,18 +58,17 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      // Welcome message
                       const Text(
-                        "We'll welcome to app",
+                        "Welcome back to the beer community",
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.black54,
                         ),
                       ),
                       const SizedBox(height: 30),
-                      // Email field
-                      const TextField(
-                        decoration: InputDecoration(
+                      TextField(
+                        controller: controller.emailController,
+                        decoration: const InputDecoration(
                           labelText: 'EMAIL ADDRESS',
                           labelStyle: TextStyle(
                             color: Colors.black54,
@@ -76,31 +78,47 @@ class LoginScreen extends StatelessWidget {
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                           filled: true,
+                          fillColor: Colors.grey,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Password field
-                      const TextField(
-                        decoration: InputDecoration(
-                          labelText: 'PASSWORD',
-                          labelStyle: TextStyle(
-                            color: Colors.black54,
-                            fontSize: 14,
+                      Obx(
+                        () => TextField(
+                          controller: controller.passwordController,
+                          decoration: InputDecoration(
+                            labelText: 'PASSWORD',
+                            labelStyle: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 14,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureText.value
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: Colors.black54,
+                              ),
+                              onPressed: () {
+                                obscureText.value = !obscureText.value;
+                              },
+                            ),
+                            border: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey,
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                          filled: true,
+                          obscureText:
+                              obscureText.value, // Use reactive value here
                         ),
-                        obscureText: true,
                       ),
                       const SizedBox(height: 10),
-                      // Forgot Password link
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // Add forgot password functionality here
+                            _showResetPasswordDialog(context);
                           },
                           child: const Text(
                             'Forgot Password?',
@@ -112,65 +130,35 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Login button
-                      ElevatedButton(
-                        onPressed: () {
-                          // Simulate login success
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MainScreen()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color(primaryColor), // Golden button
-                          foregroundColor: Colors.black,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                      Obx(
+                        () => controller.isLoading.value
+                            ? const CircularProgressIndicator(
+                                color: Color(primaryColor),
+                              )
+                            : ElevatedButton(
+                                onPressed: () {
+                                  controller.signIn(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(primaryColor),
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 50),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Login',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 20),
-                      // Social login buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              // Add Google login functionality
-                            },
-                            icon: Image.asset(
-                              'assets/google.png', // Replace with your Google icon
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                          const SizedBox(width: 20),
-                          IconButton(
-                            onPressed: () {
-                              // Add Facebook login functionality
-                            },
-                            icon: Image.asset(
-                              'assets/fb.jpg', // Replace with your Facebook icon
-                              width: 40,
-                              height: 40,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // Create account link
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
-                            "Not yet? ",
+                            "Don't have an account? ",
                             style: TextStyle(
                               color: Colors.black54,
                               fontSize: 14,
@@ -181,12 +169,11 @@ class LoginScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const SignupScreen()),
+                                    builder: (context) => SignupScreen()),
                               );
-                              // Navigate to signup screen (you can add the route here)
                             },
                             child: const Text(
-                              'Create account',
+                              'Sign Up',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 14,
@@ -203,6 +190,34 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showResetPasswordDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Password'),
+        content: TextField(
+          controller: resetEmailController,
+          decoration: const InputDecoration(
+            labelText: 'Enter your email',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              controller.resetPassword(resetEmailController.text);
+              Navigator.pop(context);
+            },
+            child: const Text('Reset'),
+          ),
+        ],
       ),
     );
   }
