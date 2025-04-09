@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Untappd Clone',
       theme: ThemeData(
-        primaryColor: const Color(0xFFFFD700), // Golden color
+        primaryColor: const Color(0xFFFFD700),
         scaffoldBackgroundColor: Colors.white,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
