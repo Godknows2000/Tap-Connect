@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const SplashScreen(), // Start with splash screen
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
