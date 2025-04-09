@@ -9,7 +9,7 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Black background as in the image
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
           children: [
