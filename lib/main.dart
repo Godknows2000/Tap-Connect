@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFFD700), // Golden buttons
+            backgroundColor: const Color(0xFFFFD700),
             foregroundColor: Colors.black,
           ),
         ),
