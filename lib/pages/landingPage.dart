@@ -36,7 +36,7 @@ class LandingPage extends StatelessWidget {
               ),
             ),
             // Logo and text section
-            Expanded(
+            const Expanded(
               flex: 1,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -50,7 +50,7 @@ class LandingPage extends StatelessWidget {
                   // ),
                   // const SizedBox(height: 10),
                   // App name
-                  const Text(
+                  Text(
                     'TAP CONNECT',
                     style: TextStyle(
                       fontSize: 36,
@@ -58,9 +58,9 @@ class LandingPage extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   // Tagline
-                  const Text(
+                  Text(
                     'Discover, drink, and share with friends.',
                     style: TextStyle(
                       fontSize: 16,

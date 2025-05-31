@@ -451,7 +451,8 @@ import 'package:tapconnect/contollers/firebase_controller.dart';
 import 'package:tapconnect/pages/beers/beer_details.dart';
 import 'package:tapconnect/pages/beers/beer_search_sreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tapconnect/pages/beers/trending_beer.dart'; // Import Firebase
+import 'package:tapconnect/pages/beers/trending_beer.dart';
+import 'package:tapconnect/pages/upcoming_events/upcoming_events_list.dart'; // Import Firebase
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -540,15 +541,15 @@ class HomeScreen extends StatelessWidget {
                       top: 16,
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.map,
                             color: Color(0xFFFFD700), // Golden icon
                             size: 24,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
                                 'View Map',
                                 style: TextStyle(
@@ -669,13 +670,27 @@ class HomeScreen extends StatelessWidget {
               title: 'Upcoming Events',
               subtitle: "Check out what's happening",
               iconColor: const Color(0xFFFFD700), // Golden icon
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UpcomingEventsScreen()),
+                );
+              },
             ),
             // Nearby Venues Section
             _buildSection(
               icon: Icons.location_on,
               title: 'Nearby Venues',
-              subtitle: 'Best places ',
+              subtitle: 'Best places to find beer near u',
               iconColor: Colors.red,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UpcomingEventsScreen()),
+                );
+              },
             ),
             // Trending Beers Section
             GestureDetector(
@@ -687,6 +702,13 @@ class HomeScreen extends StatelessWidget {
                 title: 'Trending Beers',
                 subtitle: '',
                 iconColor: Colors.orange,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const UpcomingEventsScreen()),
+                  );
+                },
               ),
             ),
             // Trending Locations Section
@@ -695,6 +717,13 @@ class HomeScreen extends StatelessWidget {
               title: 'Trending Locations',
               subtitle: '',
               iconColor: Colors.green,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UpcomingEventsScreen()),
+                );
+              },
             ),
             // Top Rated Beers Section
             _buildSection(
@@ -702,6 +731,13 @@ class HomeScreen extends StatelessWidget {
               title: 'Top Rated Beers',
               subtitle: '',
               iconColor: Colors.yellow,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UpcomingEventsScreen()),
+                );
+              },
             ),
             // Top Rated Breweries Section
             _buildSection(
@@ -709,6 +745,13 @@ class HomeScreen extends StatelessWidget {
               title: 'Top Rated Breweries',
               subtitle: '',
               iconColor: Colors.green,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UpcomingEventsScreen()),
+                );
+              },
             ),
             // Recommended Section
             _buildSection(
@@ -716,6 +759,13 @@ class HomeScreen extends StatelessWidget {
               title: 'Recommended',
               subtitle: '',
               iconColor: const Color(0xFFFFD700), // Golden icon
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UpcomingEventsScreen()),
+                );
+              },
             ),
             // Placeholder for Recommended Beers
             Padding(
@@ -859,56 +909,58 @@ class HomeScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required Color iconColor,
+    required VoidCallback? onTap, // <-- Add onTap parameter
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: iconColor,
-                size: 24,
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (subtitle.isNotEmpty)
+    return InkWell(
+      onTap: onTap, // Handle tap event
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  icon,
+                  color: iconColor,
+                  size: 24,
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      subtitle,
+                      title,
                       style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                ],
-              ),
-            ],
-          ),
-          TextButton(
-            onPressed: () {
-              // Add see all functionality
-            },
-            child: const Text(
-              'SEE ALL',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 14,
+                    if (subtitle.isNotEmpty)
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            TextButton(
+              onPressed: onTap, // Optional: Same action as tapping the section
+              child: const Text(
+                'SEE ALL',
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 14,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
