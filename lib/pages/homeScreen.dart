@@ -452,6 +452,7 @@ import 'package:tapconnect/pages/beers/beer_details.dart';
 import 'package:tapconnect/pages/beers/beer_search_sreen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tapconnect/pages/beers/trending_beer.dart';
+import 'package:tapconnect/pages/nearby_venues/nearby_events.dart';
 import 'package:tapconnect/pages/upcoming_events/upcoming_events_list.dart'; // Import Firebase
 
 class HomeScreen extends StatelessWidget {
@@ -688,7 +689,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const UpcomingEventsScreen()),
+                      builder: (context) => const NearbyEventsScreen()),
                 );
               },
             ),
