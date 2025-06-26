@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:tapconnect/models/upcoming_events_model.dart' as upcoming_events;
+import 'package:tapconnect/models/upcoming_events_model.dart'
+    as upcoming_events;
 import 'package:tapconnect/pages/nearby_venues/venues_list.dart';
 import 'package:tapconnect/pages/upcoming_events/event_details_screen.dart';
 import 'package:tapconnect/pages/upcoming_events/event_venue.dart';
@@ -459,7 +460,8 @@ class UpcomingEventsScreen extends StatefulWidget {
 }
 
 class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
-  final DateTime now = DateTime(2025, 5, 31, 12, 36); // Current date: May 31, 2025, 12:36 PM BST
+  final DateTime now =
+      DateTime(2025, 5, 31, 12, 36); // Current date: May 31, 2025, 12:36 PM BST
 
   Future<void> _addEvent(BuildContext context) async {
     DateTime? selectedDate = now;
@@ -477,7 +479,8 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
             children: [
               ListTile(
                 title: const Text('Select Date'),
-                subtitle: Text(DateFormat('EEE, MMM d, yyyy').format(selectedDate!)),
+                subtitle:
+                    Text(DateFormat('EEE, MMM d, yyyy').format(selectedDate!)),
                 onTap: () async {
                   final pickedDate = await showDatePicker(
                     context: context,
@@ -573,7 +576,10 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
   }
 
   Future<String?> _fetchVenueName(String venueId) async {
-    final doc = await FirebaseFirestore.instance.collection('venues').doc(venueId).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('venues')
+        .doc(venueId)
+        .get();
     if (doc.exists) {
       return doc.data()!['name'] as String?;
     }
@@ -630,7 +636,8 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
                         return const Center(
                           child: Text(
                             'No upcoming events available.',
-                            style: TextStyle(color: Colors.white70, fontSize: 16),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 16),
                           ),
                         );
                       }
@@ -644,11 +651,12 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
                         itemBuilder: (context, index) {
                           final event = events[index];
                           return FutureBuilder<String?>(
-                            future: _fetchVenueName(event.venueId!),
+                            future: _fetchVenueName(event.venueId ?? ''),
                             builder: (context, venueSnapshot) {
                               return EventCard(
                                 event: event,
-                                venueName: venueSnapshot.data ?? 'Unknown Venue',
+                                venueName:
+                                    venueSnapshot.data ?? 'Unknown Venue',
                                 onInterested: () => _toggleInterested(event),
                                 onCheckIn: () => _checkIn(event),
                               );
@@ -672,7 +680,8 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
                         return const Center(
                           child: Text(
                             'No past events available.',
-                            style: TextStyle(color: Colors.white70, fontSize: 16),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 16),
                           ),
                         );
                       }
@@ -690,7 +699,8 @@ class _UpcomingEventsScreenState extends State<UpcomingEventsScreen> {
                             builder: (context, venueSnapshot) {
                               return EventCard(
                                 event: event,
-                                venueName: venueSnapshot.data ?? 'Unknown Venue',
+                                venueName:
+                                    venueSnapshot.data ?? 'Unknown Venue',
                                 onInterested: () => _toggleInterested(event),
                                 onCheckIn: () => _checkIn(event),
                               );

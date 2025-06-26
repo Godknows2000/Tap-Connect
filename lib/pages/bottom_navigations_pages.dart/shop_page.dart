@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tapconnect/models/beers_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:tapconnect/models/beer_model.dart';
 import 'package:tapconnect/pages/beers/beer_details.dart';
-// Import the shared beer data
 
 class ShopScreen extends StatelessWidget {
   const ShopScreen({super.key});
@@ -9,7 +9,7 @@ class ShopScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A), // Dark background
+      backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1A1A),
         elevation: 0,
@@ -42,8 +42,7 @@ class ShopScreen extends StatelessWidget {
           children: [
             // Search Bar
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
                 enabled: false,
                 decoration: InputDecoration(
@@ -62,8 +61,7 @@ class ShopScreen extends StatelessWidget {
             ),
             // Shipping Location
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 children: [
                   const Icon(
@@ -81,8 +79,7 @@ class ShopScreen extends StatelessWidget {
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.arrow_drop_down,
-                        color: Colors.white54),
+                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
                     onPressed: () {
                       // Add location change functionality
                     },
@@ -92,8 +89,7 @@ class ShopScreen extends StatelessWidget {
             ),
             // Personalized Box Section
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
@@ -126,8 +122,7 @@ class ShopScreen extends StatelessWidget {
                               children: [
                                 Row(
                                   children: [
-                                    _buildStyleChip(
-                                        'IPA', '59%', Colors.purple),
+                                    _buildStyleChip('IPA', '59%', Colors.purple),
                                     const SizedBox(width: 8),
                                     _buildStyleChip('Sour', '25%', Colors.teal),
                                   ],
@@ -146,8 +141,7 @@ class ShopScreen extends StatelessWidget {
                                     const CircleAvatar(
                                       radius: 12,
                                       backgroundColor: Colors.grey,
-                                      child: Icon(Icons.person,
-                                          size: 16, color: Colors.white),
+                                      child: Icon(Icons.person, size: 16, color: Colors.white),
                                     ),
                                     const SizedBox(width: 8),
                                     const Text(
@@ -165,8 +159,7 @@ class ShopScreen extends StatelessWidget {
                           Column(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.green,
                                   borderRadius: BorderRadius.circular(10),
@@ -182,8 +175,7 @@ class ShopScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.purple,
                                   borderRadius: BorderRadius.circular(10),
@@ -199,8 +191,7 @@ class ShopScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.orange,
                                   borderRadius: BorderRadius.circular(10),
@@ -239,8 +230,7 @@ class ShopScreen extends StatelessWidget {
             ),
             // Award Winners Section
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -273,29 +263,42 @@ class ShopScreen extends StatelessWidget {
                   // Horizontal ListView for the first two beers
                   SizedBox(
                     height: 290,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: BeerData
-                          .beers.length, // Show only the first two beers
-                      itemBuilder: (context, index) {
-                        final beer = BeerData.beers[index];
-                        return _buildBeerCard(
-                          context,
-                          beer['imagePath'],
-                          beer['name'],
-                          beer['location'],
-                          beer['rating'].toDouble(),
-                          beer['price'],
-                          beer['type'],
-                          beer['location'],
-                          beer['rating'].toDouble(),
-                          beer['ratingCount'],
+                    child: StreamBuilder<QuerySnapshot>(
+                      stream: BeerData.streamBeers(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        List<Beer> beers = [];
+                        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                          beers = snapshot.data!.docs
+                              .map((doc) => Beer.fromJson(doc.data() as Map<String, dynamic>))
+                              .toList();
+                        } else {
+                          beers = BeerData.dummyBeers;
+                        }
+                        final topBeers = beers.length > 2 ? beers.sublist(0, 2) : beers;
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: topBeers.length,
+                          itemBuilder: (context, index) {
+                            final beer = topBeers[index];
+                            return _buildBeerCard(
+                              context,
+                              beer.imagePath ?? '',
+                              beer.name ?? 'Unknown Beer',
+                              beer.location ?? 'Unknown Location',
+                              beer.rating ?? 0.0,
+                              beer.price ?? 'N/A',
+                              beer.type ?? 'Unknown Type',
+                              beer.ratingCount ?? 0,
+                            );
+                          },
                         );
                       },
                     ),
                   ),
                   const SizedBox(height: 16),
-
                   const Text(
                     'See All',
                     style: TextStyle(
@@ -306,32 +309,44 @@ class ShopScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   // Vertical GridView for the remaining beers
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.6,
-                    ),
-                    itemCount:
-                        BeerData.beers.length - 2, // Show the remaining beers
-                    itemBuilder: (context, index) {
-                      final beer = BeerData
-                          .beers[index + 2]; // Start from the third beer
-                      return _buildBeerCard(
-                        context,
-                        beer['imagePath'],
-                        beer['name'],
-                        beer['location'],
-                        beer['rating'].toDouble(),
-                        beer['price'],
-                        beer['type'],
-                        beer['location'],
-                        beer['rating'].toDouble(),
-                        beer['ratingCount'],
+                  StreamBuilder<QuerySnapshot>(
+                    stream: BeerData.streamBeers(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      List<Beer> beers = [];
+                      if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                        beers = snapshot.data!.docs
+                            .map((doc) => Beer.fromJson(doc.data() as Map<String, dynamic>))
+                            .toList();
+                      } else {
+                        beers = BeerData.dummyBeers;
+                      }
+                      final remainingBeers = beers.length > 2 ? beers.sublist(2) : [];
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 0.6,
+                        ),
+                        itemCount: remainingBeers.length,
+                        itemBuilder: (context, index) {
+                          final beer = remainingBeers[index];
+                          return _buildBeerCard(
+                            context,
+                            beer.imagePath ?? '',
+                            beer.name ?? 'Unknown Beer',
+                            beer.location ?? 'Unknown Location',
+                            beer.rating ?? 0.0,
+                            beer.price ?? 'N/A',
+                            beer.type ?? 'Unknown Type',
+                            beer.ratingCount ?? 0,
+                          );
+                        },
                       );
                     },
                   ),
@@ -378,12 +393,10 @@ class ShopScreen extends StatelessWidget {
     BuildContext context,
     String imagePath,
     String name,
-    String brewery,
+    String location,
     double rating,
     String price,
     String type,
-    String location,
-    double ratingValue,
     int ratingCount,
   ) {
     return GestureDetector(
@@ -397,7 +410,7 @@ class ShopScreen extends StatelessWidget {
               subtitle: price,
               type: type,
               location: location,
-              rating: ratingValue,
+              rating: rating,
               ratingCount: ratingCount,
             ),
           ),
@@ -414,7 +427,7 @@ class ShopScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
-                  image: AssetImage(imagePath),
+                  image: NetworkImage(imagePath.isNotEmpty ? imagePath : 'https://via.placeholder.com/150'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -430,7 +443,7 @@ class ShopScreen extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              brewery,
+              location,
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
@@ -439,14 +452,26 @@ class ShopScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(
-                  Icons.star,
-                  color: Color(0xFFFFD700),
-                  size: 16,
+                Row(
+                  children: List.generate(5, (index) {
+                    return Icon(
+                      index < rating.round() ? Icons.star : Icons.star_border,
+                      color: const Color(0xFFFFD700),
+                      size: 16,
+                    );
+                  }),
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  rating.toStringAsFixed(2),
+                  rating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '($ratingCount)',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -455,16 +480,16 @@ class ShopScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text(
+            const Text(
               '16oz Can',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              '\$$price',
+              price == 'PRE-ORDER' ? price : '\$$price',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
