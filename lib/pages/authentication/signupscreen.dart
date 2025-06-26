@@ -36,20 +36,20 @@ class SignupScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: const Color(0xFFFFD700).withOpacity(0.2),
-                          ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Color(0xFF8F2B08),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
+                        // Container(
+                        //   width: 100,
+                        //   height: 100,
+                        //   decoration: BoxDecoration(
+                        //     shape: BoxShape.circle,
+                        //     color: const Color(0xFFFFD700).withOpacity(0.2),
+                        //   ),
+                        //   child: const Icon(
+                        //     Icons.person,
+                        //     size: 60,
+                        //     color: Color(0xFF8F2B08),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 20),
                         const Text(
                           'Sign Up',
                           style: TextStyle(

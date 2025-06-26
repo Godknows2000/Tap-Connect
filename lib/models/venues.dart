@@ -84,7 +84,7 @@ class Venue {
       rating: 4.5,
       ratingCount: 200,
       checkInCount: 150,
-      imagePath: 'https://via.placeholder.com/150',
+      imagePath: 'assets/club-4.jpg',
     ),
     Venue(
       id: 'venue_2',
@@ -100,7 +100,7 @@ class Venue {
       rating: 4.0,
       ratingCount: 150,
       checkInCount: 100,
-      imagePath: 'https://via.placeholder.com/150',
+      imagePath: 'assets/club-3.jpg',
     ),
     Venue(
       id: 'venue_3',
@@ -116,7 +116,7 @@ class Venue {
       rating: 4.2,
       ratingCount: 180,
       checkInCount: 120,
-      imagePath: 'https://via.placeholder.com/150',
+      imagePath: 'assets/club-2.jpg',
     ),
   ];
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tapconnect/models/beer_model.dart';
+import 'package:tapconnect/pages/top_rated_breweries/brewery_detail_screen.dart';
 
 class TopRatedBreweriesScreen extends StatefulWidget {
   const TopRatedBreweriesScreen({super.key});
@@ -203,10 +204,7 @@ class _TopRatedBreweriesScreenState extends State<TopRatedBreweriesScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Scaffold(
-              appBar: AppBar(title: Text(brewery.name ?? 'Brewery Details')),
-              body: Center(child: Text('Brewery: ${brewery.name}')),
-            ),
+            builder: (context) => BreweryDetailScreen(brewery: brewery),
           ),
         );
       },
@@ -226,10 +224,10 @@ class _TopRatedBreweriesScreenState extends State<TopRatedBreweriesScreen> {
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(10)),
                     image: DecorationImage(
-                      image: NetworkImage(
+                      image: AssetImage(
                         brewery.imagePath?.isNotEmpty == true
                             ? brewery.imagePath!
-                            : 'https://via.placeholder.com/150',
+                            : 'assets/placeholder.png',
                       ),
                       fit: BoxFit.cover,
                     ),

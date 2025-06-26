@@ -43,7 +43,8 @@ class _TrendingLocationsState extends State<TrendingLocations> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               onChanged: _filterVenues,
               decoration: InputDecoration(
@@ -61,7 +62,8 @@ class _TrendingLocationsState extends State<TrendingLocations> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -89,13 +91,17 @@ class _TrendingLocationsState extends State<TrendingLocations> {
                   ],
                 ),
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('venues').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('venues')
+                      .snapshots(),
                   builder: (context, snapshot) {
-                    final totalVenues = snapshot.hasData && snapshot.data!.docs.isNotEmpty
-                        ? snapshot.data!.docs.length
-                        : Venue.dummyVenues.length;
+                    final totalVenues =
+                        snapshot.hasData && snapshot.data!.docs.isNotEmpty
+                            ? snapshot.data!.docs.length
+                            : Venue.dummyVenues.length;
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(20),
@@ -115,7 +121,8 @@ class _TrendingLocationsState extends State<TrendingLocations> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('venues').snapshots(),
+              stream:
+                  FirebaseFirestore.instance.collection('venues').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -127,25 +134,39 @@ class _TrendingLocationsState extends State<TrendingLocations> {
                       ? allVenues
                       : allVenues.where((doc) {
                           final venue = doc.data() as Map<String, dynamic>;
-                          return (venue['name']?.toLowerCase()?.contains(_searchQuery) ?? false) ||
-                              (venue['address']?.toLowerCase()?.contains(_searchQuery) ?? false);
+                          return (venue['name']
+                                      ?.toLowerCase()
+                                      ?.contains(_searchQuery) ??
+                                  false) ||
+                              (venue['address']
+                                      ?.toLowerCase()
+                                      ?.contains(_searchQuery) ??
+                                  false);
                         }).toList();
                 } else {
                   filteredVenues = _searchQuery.isEmpty
                       ? Venue.dummyVenues
                       : Venue.dummyVenues.where((venue) {
-                          return (venue.name?.toLowerCase().contains(_searchQuery) ?? false) ||
-                              (venue.address?.toLowerCase().contains(_searchQuery) ?? false);
+                          return (venue.name
+                                      ?.toLowerCase()
+                                      .contains(_searchQuery) ??
+                                  false) ||
+                              (venue.address
+                                      ?.toLowerCase()
+                                      .contains(_searchQuery) ??
+                                  false);
                         }).toList();
                 }
 
                 filteredVenues.sort((a, b) {
                   final aCheckInCount = (a is QueryDocumentSnapshot
                           ? (a.data() as Map<String, dynamic>)['checkInCount']
-                          : a.checkInCount) as num? ?? 0;
+                          : a.checkInCount) as num? ??
+                      0;
                   final bCheckInCount = (b is QueryDocumentSnapshot
                           ? (b.data() as Map<String, dynamic>)['checkInCount']
-                          : b.checkInCount) as num? ?? 0;
+                          : b.checkInCount) as num? ??
+                      0;
                   return bCheckInCount.compareTo(aCheckInCount);
                 });
 
@@ -157,7 +178,8 @@ class _TrendingLocationsState extends State<TrendingLocations> {
                         ),
                       )
                     : GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 16.0,
                           mainAxisSpacing: 16.0,
@@ -166,9 +188,11 @@ class _TrendingLocationsState extends State<TrendingLocations> {
                         padding: const EdgeInsets.all(16.0),
                         itemCount: filteredVenues.length,
                         itemBuilder: (context, index) {
-                          final venue = filteredVenues[index] is QueryDocumentSnapshot
-                              ? Venue.fromJson(filteredVenues[index].data() as Map<String, dynamic>)
-                              : filteredVenues[index] as Venue;
+                          final venue =
+                              filteredVenues[index] is QueryDocumentSnapshot
+                                  ? Venue.fromJson(filteredVenues[index].data()
+                                      as Map<String, dynamic>)
+                                  : filteredVenues[index] as Venue;
                           return _buildVenueCard(
                             context,
                             venue,
@@ -213,12 +237,13 @@ class _TrendingLocationsState extends State<TrendingLocations> {
                 Container(
                   height: 120,
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(10)),
                     image: DecorationImage(
-                      image: NetworkImage(
+                      image: AssetImage(
                         venue.imagePath?.isNotEmpty == true
                             ? venue.imagePath!
-                            : 'https://via.placeholder.com/150',
+                            : 'assets/placeholder.png',
                       ),
                       fit: BoxFit.cover,
                     ),

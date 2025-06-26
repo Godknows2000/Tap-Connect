@@ -42,7 +42,8 @@ class _TrendingBeerState extends State<TrendingBeer> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: TextField(
               onChanged: _filterBeers,
               decoration: InputDecoration(
@@ -60,7 +61,8 @@ class _TrendingBeerState extends State<TrendingBeer> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -105,9 +107,11 @@ class _TrendingBeerState extends State<TrendingBeer> {
                 StreamBuilder<QuerySnapshot>(
                   stream: BeerData.streamBeers(),
                   builder: (context, snapshot) {
-                    final totalBeers = snapshot.hasData ? snapshot.data!.docs.length : 0;
+                    final totalBeers =
+                        snapshot.hasData ? snapshot.data!.docs.length : 0;
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(20),
@@ -128,65 +132,81 @@ class _TrendingBeerState extends State<TrendingBeer> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: BeerData.streamBeers(),
-  builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (snapshot.hasError) {
-      return const Center(child: Text('Error loading beers', style: TextStyle(color: Colors.white70)));
-    }
-    final allBeers = snapshot.data?.docs ?? [];
-    final filteredBeers = _searchQuery.isEmpty
-        ? allBeers
-        : allBeers.where((doc) {
-            final beer = doc.data() as Map<String, dynamic>;
-            return beer['name']?.toLowerCase().contains(_searchQuery) == true ||
-                beer['type']?.toLowerCase().contains(_searchQuery) == true ||
-                beer['location']?.toLowerCase().contains(_searchQuery) == true;
-          }).toList();
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return const Center(
+                      child: Text('Error loading beers',
+                          style: TextStyle(color: Colors.white70)));
+                }
+                final allBeers = snapshot.data?.docs ?? [];
+                final filteredBeers = _searchQuery.isEmpty
+                    ? allBeers
+                    : allBeers.where((doc) {
+                        final beer = doc.data() as Map<String, dynamic>;
+                        return beer['name']
+                                    ?.toLowerCase()
+                                    .contains(_searchQuery) ==
+                                true ||
+                            beer['type']
+                                    ?.toLowerCase()
+                                    .contains(_searchQuery) ==
+                                true ||
+                            beer['location']
+                                    ?.toLowerCase()
+                                    .contains(_searchQuery) ==
+                                true;
+                      }).toList();
 
-    filteredBeers.sort((a, b) {
-      final aData = a.data() as Map<String, dynamic>;
-      final bData = b.data() as Map<String, dynamic>;
-      final aCheckInCount = (aData['checkInCount'] as num?)?.toInt() ?? 0;
-      final bCheckInCount = (bData['checkInCount'] as num?)?.toInt() ?? 0;
-      return bCheckInCount.compareTo(aCheckInCount); // Sort by check-in count
-    });
+                filteredBeers.sort((a, b) {
+                  final aData = a.data() as Map<String, dynamic>;
+                  final bData = b.data() as Map<String, dynamic>;
+                  final aCheckInCount =
+                      (aData['checkInCount'] as num?)?.toInt() ?? 0;
+                  final bCheckInCount =
+                      (bData['checkInCount'] as num?)?.toInt() ?? 0;
+                  return bCheckInCount
+                      .compareTo(aCheckInCount); // Sort by check-in count
+                });
 
-    return filteredBeers.isEmpty
-        ? const Center(
-            child: Text(
-              'No trending beers found',
-              style: TextStyle(color: Colors.white70, fontSize: 18),
+                return filteredBeers.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No trending beers found',
+                          style: TextStyle(color: Colors.white70, fontSize: 18),
+                        ),
+                      )
+                    : GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16.0,
+                          mainAxisSpacing: 16.0,
+                          childAspectRatio: 0.75,
+                        ),
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: filteredBeers.length,
+                        itemBuilder: (context, index) {
+                          final doc = filteredBeers[index];
+                          final beer =
+                              Beer.fromJson(doc.data() as Map<String, dynamic>);
+                          return _buildBeerCard(
+                            context,
+                            beer.imagePath ?? '',
+                            beer.name ?? 'Unknown Beer',
+                            beer.type ?? 'Unknown Type',
+                            beer.location ?? 'Unknown Location',
+                            beer.rating ?? 0.0,
+                            beer.ratingCount ?? 0,
+                            beer.price ?? 'N/A',
+                            rank: index + 1,
+                          );
+                        },
+                      );
+              },
             ),
-          )
-        : GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16.0,
-              mainAxisSpacing: 16.0,
-              childAspectRatio: 0.75,
-            ),
-            padding: const EdgeInsets.all(16.0),
-            itemCount: filteredBeers.length,
-            itemBuilder: (context, index) {
-              final doc = filteredBeers[index];
-              final beer = Beer.fromJson(doc.data() as Map<String, dynamic>);
-              return _buildBeerCard(
-                context,
-                beer.imagePath ?? '',
-                beer.name ?? 'Unknown Beer',
-                beer.type ?? 'Unknown Type',
-                beer.location ?? 'Unknown Location',
-                beer.rating ?? 0.0,
-                beer.ratingCount ?? 0,
-                beer.price ?? 'N/A',
-                rank: index + 1,
-              );
-            },
-          );
-  },
-),
           ),
         ],
       ),
@@ -222,7 +242,7 @@ class _TrendingBeerState extends State<TrendingBeer> {
         );
       },
       child: Card(
-        color: Colors.grey[900],
+        color: const Color.fromARGB(255, 7, 60, 233),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -232,11 +252,14 @@ class _TrendingBeerState extends State<TrendingBeer> {
             Stack(
               children: [
                 Container(
-                  height: 120,
+                  height: 150,
                   decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(10)),
                     image: DecorationImage(
-                      image: NetworkImage(imagePath.isNotEmpty ? imagePath : 'https://via.placeholder.com/150'),
+                      image: NetworkImage(imagePath.isNotEmpty
+                          ? imagePath
+                          : 'https://via.placeholder.com/150'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -280,7 +303,7 @@ class _TrendingBeerState extends State<TrendingBeer> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     type,
                     style: const TextStyle(
@@ -299,19 +322,21 @@ class _TrendingBeerState extends State<TrendingBeer> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       Row(
                         children: List.generate(5, (index) {
                           return Icon(
-                            index < rating.round() ? Icons.star : Icons.star_border,
+                            index < rating.round()
+                                ? Icons.star
+                                : Icons.star_border,
                             color: const Color(0xFFFFD700),
                             size: 16,
                           );
                         }),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 2),
                       Text(
                         rating.toStringAsFixed(1),
                         style: const TextStyle(
