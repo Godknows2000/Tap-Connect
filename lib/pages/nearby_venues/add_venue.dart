@@ -15,12 +15,12 @@ class _AddVenueScreenState extends State<AddVenueScreen> {
   final TextEditingController latitudeController = TextEditingController();
   final TextEditingController longitudeController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
-  final TextEditingController operatingHoursController = TextEditingController();
+  final TextEditingController operatingHoursController =
+      TextEditingController();
   final TextEditingController beersController = TextEditingController();
   final TextEditingController foodController = TextEditingController();
   final TextEditingController winesController = TextEditingController();
   final TextEditingController menuItemController = TextEditingController();
-
   List<Map<String, dynamic>> menuItems = [];
   bool isLoadingLocation = false;
 
@@ -93,6 +93,46 @@ class _AddVenueScreenState extends State<AddVenueScreen> {
     }
   }
 
+  Future<void> _addVenue() async {
+    if (nameController.text.isEmpty ||
+        latitudeController.text.isEmpty ||
+        longitudeController.text.isEmpty ||
+        addressController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields.')),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('venues').add({
+        'name': nameController.text,
+        'latitude': double.tryParse(latitudeController.text) ?? 0.0,
+        'longitude': double.tryParse(longitudeController.text) ?? 0.0,
+        'address': addressController.text,
+        'operatingHours': operatingHoursController.text.isNotEmpty
+            ? operatingHoursController.text
+            : null,
+        'beersCount': int.tryParse(beersController.text) ?? 0,
+        'foodItemsCount': int.tryParse(foodController.text) ?? 0,
+        'winesCount': int.tryParse(winesController.text) ?? 0,
+        'menuItems': menuItems.isNotEmpty ? menuItems : null,
+        'rating': 0.0,
+        'ratingCount': 0,
+        'checkInCount': 0,
+        'imagePath': null,
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Venue added successfully!')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding venue: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,87 +156,168 @@ class _AddVenueScreenState extends State<AddVenueScreen> {
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Venue Name'),
+                decoration: const InputDecoration(
+                  labelText: 'Venue Name *',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: latitudeController,
                 decoration: InputDecoration(
-                  labelText: 'Latitude',
+                  labelText: 'Latitude *',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                   suffixIcon: isLoadingLocation
                       ? const Padding(
                           padding: EdgeInsets.all(8.0),
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : IconButton(
-                          icon: const Icon(Icons.my_location, color: Colors.white70),
+                          icon: const Icon(Icons.my_location,
+                              color: Colors.white70),
                           onPressed: _getUserLocation,
                         ),
                 ),
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: longitudeController,
                 decoration: InputDecoration(
-                  labelText: 'Longitude',
+                  labelText: 'Longitude *',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: const OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
                   suffixIcon: isLoadingLocation
                       ? const Padding(
                           padding: EdgeInsets.all(8.0),
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : IconButton(
-                          icon: const Icon(Icons.my_location, color: Colors.white70),
+                          icon: const Icon(Icons.my_location,
+                              color: Colors.white70),
                           onPressed: _getUserLocation,
                         ),
                 ),
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _pickLocationOnMap,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 50),
                 ),
                 child: const Text('Pick Location on Map'),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: addressController,
-                decoration: const InputDecoration(labelText: 'Address'),
+                decoration: const InputDecoration(
+                  labelText: 'Address *',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: operatingHoursController,
-                decoration: const InputDecoration(labelText: 'Operating Hours (e.g., Open Today • 8AM - 6PM)'),
+                decoration: const InputDecoration(
+                  labelText: 'Operating Hours (e.g., Open Today • 8AM - 6PM)',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: beersController,
-                decoration: const InputDecoration(labelText: 'Number of Beers'),
+                decoration: const InputDecoration(
+                  labelText: 'Number of Beers',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: foodController,
-                decoration: const InputDecoration(labelText: 'Number of Food Items'),
+                decoration: const InputDecoration(
+                  labelText: 'Number of Food Items',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: winesController,
-                decoration: const InputDecoration(labelText: 'Number of Wines'),
+                decoration: const InputDecoration(
+                  labelText: 'Number of Wines',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
               ),
+              const SizedBox(height: 16),
               TextField(
                 controller: menuItemController,
-                decoration: const InputDecoration(labelText: 'Add Menu Item (e.g., Beer Name)'),
+                decoration: const InputDecoration(
+                  labelText: 'Add Menu Item (e.g., Beer Name)',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  filled: true,
+                  fillColor: Colors.grey,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
                 style: const TextStyle(color: Colors.white),
                 onSubmitted: (value) {
                   if (value.isNotEmpty) {
                     setState(() {
-                      menuItems.add({'name': value, 'type': 'Beer', 'rating': 0.0});
+                      menuItems
+                          .add({'name': value, 'type': 'Beer', 'rating': 0.0});
                       menuItemController.clear();
                     });
                   }
@@ -204,31 +325,21 @@ class _AddVenueScreenState extends State<AddVenueScreen> {
               ),
               const SizedBox(height: 8),
               Wrap(
-                children: menuItems.map((item) => Chip(
-                  label: Text(item['name']),
-                  onDeleted: () {
-                    setState(() {
-                      menuItems.remove(item);
-                    });
-                  },
-                )).toList(),
+                spacing: 8.0,
+                children: menuItems
+                    .map((item) => Chip(
+                          label: Text(item['name']),
+                          onDeleted: () {
+                            setState(() {
+                              menuItems.remove(item);
+                            });
+                          },
+                        ))
+                    .toList(),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () async {
-                  await FirebaseFirestore.instance.collection('venues').add({
-                    'name': nameController.text,
-                    'latitude': double.tryParse(latitudeController.text),
-                    'longitude': double.tryParse(longitudeController.text),
-                    'address': addressController.text,
-                    'operatingHours': operatingHoursController.text,
-                    'beersCount': int.tryParse(beersController.text) ?? 0,
-                    'foodItemsCount': int.tryParse(foodController.text) ?? 0,
-                    'winesCount': int.tryParse(winesController.text) ?? 0,
-                    'menuItems': menuItems,
-                  });
-                  Navigator.pop(context);
-                },
+                onPressed: _addVenue,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFD700),
                   foregroundColor: Colors.black,
@@ -261,11 +372,13 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pick Location'),
+        backgroundColor: const Color(0xFF1A1A1A),
+        title:
+            const Text('Pick Location', style: TextStyle(color: Colors.white)),
         actions: [
           if (selectedPosition != null)
             IconButton(
-              icon: const Icon(Icons.check),
+              icon: const Icon(Icons.check, color: Colors.white),
               onPressed: () {
                 Navigator.pop(context, selectedPosition);
               },

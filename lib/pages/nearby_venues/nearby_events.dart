@@ -1,12 +1,16 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:tapconnect/models/upcoming_events_model.dart';
+import 'package:tapconnect/models/user_model.dart';
 import 'package:tapconnect/models/venues.dart';
+import 'package:tapconnect/pages/friend_management/friend_management.dart';
+import 'package:tapconnect/pages/nearby_venues/add_venue.dart';
 import 'package:tapconnect/pages/nearby_venues/venues_list.dart';
+import 'package:tapconnect/pages/upcoming_events/add_event.dart';
 import 'package:tapconnect/pages/upcoming_events/event_details_screen.dart';
-import 'add_venue.dart';
-import 'package:tapconnect/pages/upcoming_events/upcoming_events_list.dart';
 
 class NearbyEventsScreen extends StatefulWidget {
   const NearbyEventsScreen({super.key});
@@ -16,10 +20,54 @@ class NearbyEventsScreen extends StatefulWidget {
 }
 
 class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
-  final DateTime now =
-      DateTime(2025, 5, 31, 13, 0); // Current date: May 31, 2025, 01:00 PM BST
-  final double userLat = 51.5074; // User's latitude (London, UK)
-  final double userLon = -0.1278; // User's longitude (London, UK)
+  double? userLat;
+  double? userLon;
+  bool isLoadingLocation = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserLocation();
+  }
+
+  Future<void> _getUserLocation() async {
+    setState(() {
+      isLoadingLocation = true;
+    });
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw 'Location services are disabled.';
+      }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw 'Location permissions are denied.';
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permissions are permanently denied.';
+      }
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      setState(() {
+        userLat = position.latitude;
+        userLon = position.longitude;
+        isLoadingLocation = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingLocation = false;
+        userLat = 51.5074; // Fallback to London
+        userLon = -0.1278;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error getting location: $e')),
+      );
+    }
+  }
 
   double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double R = 6371; // Radius of the Earth in km
@@ -34,7 +82,8 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
     return R * c; // Distance in km
   }
 
-  Future<Venue?> _fetchVenue(String venueId) async {
+  Future<Venue?> _fetchVenue(String? venueId) async {
+    if (venueId == null || venueId.isEmpty) return null;
     final doc = await FirebaseFirestore.instance
         .collection('venues')
         .doc(venueId)
@@ -62,8 +111,85 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
     }
   }
 
+  Future<void> _shareEvent(Event event, Venue? venue) async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to share.')),
+      );
+      return;
+    }
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .get();
+    final user = UserModel.fromJson(userDoc.data()!);
+    final friends = user.friends ?? [];
+    if (friends.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No friends to share with.')),
+      );
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Share Event'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: friends
+              .map((friendId) => FutureBuilder<DocumentSnapshot>(
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(friendId)
+                        .get(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const SizedBox.shrink();
+                      final friend = UserModel.fromJson(
+                          snapshot.data!.data() as Map<String, dynamic>);
+                      return ListTile(
+                        title: Text(friend.email ?? 'Unknown'),
+                        onTap: () async {
+                          await FirebaseFirestore.instance
+                              .collection('messages')
+                              .add({
+                            'senderId': currentUserId,
+                            'receiverId': friendId,
+                            'type': 'event_share',
+                            'eventId': event.id,
+                            'venueId': venue?.id,
+                            'message': 'Check out this event: ${event.title}',
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'read': false,
+                          });
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Event shared via message!')),
+                          );
+                        },
+                      );
+                    },
+                  ))
+              .toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isLoadingLocation) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
@@ -81,11 +207,35 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add, color: Colors.white),
+            onPressed: () {
+              final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+              if (currentUserId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content:
+                          Text('You must be logged in to manage friends.')),
+                );
+                return;
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FriendManagementScreen(
+                    currentUserId: currentUserId,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('events')
-            .where('timestamp', isGreaterThanOrEqualTo: now)
+            .where('timestamp', isGreaterThanOrEqualTo: DateTime.now())
             .orderBy('timestamp')
             .snapshots(),
         builder: (context, snapshot) {
@@ -118,12 +268,12 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
 
           return FutureBuilder<List<Map<String, dynamic>>>(
             future: Future.wait(events.map((event) async {
-              final venue = await _fetchVenue(event.venueId!);
+              final venue = await _fetchVenue(event.venueId);
               double distance = venue != null &&
                       venue.latitude != null &&
                       venue.longitude != null
                   ? calculateDistance(
-                      userLat, userLon, venue.latitude!, venue.longitude!)
+                      userLat!, userLon!, venue.latitude!, venue.longitude!)
                   : double.infinity;
               return {
                 'event': event,
@@ -148,7 +298,7 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
               if (eventList.isEmpty) {
                 return const Center(
                   child: Text(
-                    'No events with valid venues found.\nTry adding a new venue and event!',
+                    'No events found.\nTry adding a new venue and event!',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
@@ -196,7 +346,7 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Image.asset(
-                                'assets/venue_icon.png',
+                                'assets/club-2.jpg',
                                 color: Colors.black,
                                 width: 24,
                                 height: 24,
@@ -223,7 +373,7 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    venue?.name ?? 'Unknown Venue',
+                                    venue?.name ?? 'No Venue Specified',
                                     style: const TextStyle(
                                         color: Colors.white54, fontSize: 14),
                                   ),
@@ -266,6 +416,14 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
                                   ),
                                   onPressed: () => _checkIn(event),
                                 ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.share,
+                                    color: Colors.white54,
+                                    size: 24,
+                                  ),
+                                  onPressed: () => _shareEvent(event, venue),
+                                ),
                               ],
                             ),
                           ],
@@ -288,8 +446,7 @@ class _NearbyEventsScreenState extends State<NearbyEventsScreen> {
             if (value == 'event') {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const UpcomingEventsScreen()),
+                MaterialPageRoute(builder: (context) => const AddEventScreen()),
               );
             } else if (value == 'venue') {
               Navigator.push(

@@ -84,8 +84,8 @@ class LandingPage extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(primaryColor), // Golden button
+                      backgroundColor: const Color.fromARGB(
+                          128, 19, 51, 255), // Golden button
                       foregroundColor: Colors.black,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
@@ -94,7 +94,7 @@ class LandingPage extends StatelessWidget {
                     ),
                     child: const Text(
                       'Create Account',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -106,7 +106,7 @@ class LandingPage extends StatelessWidget {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(128, 16, 47, 243),
                       side: const BorderSide(color: Colors.white),
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
@@ -115,7 +115,7 @@ class LandingPage extends StatelessWidget {
                     ),
                     child: const Text(
                       'Log In',
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                   ),
                 ],

@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(primaryColor), // Beer color background
+      backgroundColor: const Color(0x800B21B4), // Beer color background
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.black26, // Faint color (semi-transparent black)
+                color: Colors.white, // Faint color (semi-transparent black)
               ),
             ),
             const SizedBox(height: 20), // Space between text and logo

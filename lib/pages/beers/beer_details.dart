@@ -238,14 +238,14 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:tapconnect/constants.dart';
-import 'package:tapconnect/contollers/firebase_controller.dart'; // Import BeerData
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firebase
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tapconnect/models/beer_model.dart';
 
-class BeerDetailScreen extends StatelessWidget {
+class BeerDetailScreen extends StatefulWidget {
   final String imagePath;
   final String title;
-  final String subtitle; // e.g., price or status
+  final String subtitle;
   final String type;
   final String location;
   final double rating;
@@ -263,14 +263,63 @@ class BeerDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<BeerDetailScreen> createState() => _BeerDetailScreenState();
+}
+
+class _BeerDetailScreenState extends State<BeerDetailScreen> {
+  double selectedRating = 0.0;
+  final TextEditingController reviewController = TextEditingController();
+
+  Future<void> _rateBeer() async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must be logged in to rate beers.')),
+      );
+      return;
+    }
+    final reviewData = {
+      'userId': currentUserId,
+      'rating': selectedRating,
+      'review': reviewController.text,
+      'timestamp': FieldValue.serverTimestamp(),
+    };
+    await FirebaseFirestore.instance
+        .collection('beers')
+        .doc(widget
+            .title) // Assuming title is unique; replace with beer ID if available
+        .collection('reviews')
+        .add(reviewData);
+
+    final reviewsSnapshot = await FirebaseFirestore.instance
+        .collection('beers')
+        .doc(widget.title)
+        .collection('reviews')
+        .get();
+    final ratings = reviewsSnapshot.docs
+        .map((doc) => (doc.data()['rating'] as num).toDouble())
+        .toList();
+    final averageRating = ratings.isNotEmpty
+        ? ratings.reduce((a, b) => a + b) / ratings.length
+        : 0.0;
+    await FirebaseFirestore.instance
+        .collection('beers')
+        .doc(widget.title)
+        .update({
+      'rating': averageRating,
+      'ratingCount': ratings.length,
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A), // Dark background
+      backgroundColor: const Color(0xFF1A1A1A),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1A1A1A),
         elevation: 0,
         title: Text(
-          title,
+          widget.title,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -288,13 +337,12 @@ class BeerDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Beer Image
             Container(
               height: 300,
               width: double.infinity,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(imagePath),
+                  image: NetworkImage(widget.imagePath),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -304,9 +352,8 @@ class BeerDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Beer Title
                   Text(
-                    title,
+                    widget.title,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -314,32 +361,30 @@ class BeerDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  // Beer Subtitle (e.g., Price or Status)
                   Text(
-                    subtitle,
+                    widget.subtitle,
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 18,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Rating and Rating Count
                   Row(
                     children: [
                       Row(
                         children: List.generate(5, (index) {
                           return Icon(
-                            index < (rating / 5 * 5).round()
+                            index < (widget.rating / 5 * 5).round()
                                 ? Icons.star
                                 : Icons.star_border,
-                            color: const Color(0xFFFFD700), // Golden stars
+                            color: const Color(0xFFFFD700),
                             size: 20,
                           );
                         }),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '$rating AVG',
+                        '${widget.rating} AVG',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
@@ -347,7 +392,7 @@ class BeerDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        '$ratingCount ratings',
+                        '${widget.ratingCount} ratings',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
@@ -356,7 +401,6 @@ class BeerDetailScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Beer Description (Placeholder)
                   const Text(
                     'This is a premium beer with a rich, malty flavor and a smooth finish. Perfect for a relaxing evening or a social gathering with friends.',
                     style: TextStyle(
@@ -365,16 +409,63 @@ class BeerDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Additional Info (e.g., ABV, Type, etc.)
                   Text(
-                    'ABV: 5.0%\nType: $type\nOrigin: $location',
+                    'ABV: 5.0%\nType: ${widget.type}\nOrigin: ${widget.location}',
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Rate this Beer',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Slider(
+                    value: selectedRating,
+                    min: 0,
+                    max: 5,
+                    divisions: 5,
+                    label: selectedRating.toStringAsFixed(1),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedRating = value;
+                      });
+                    },
+                  ),
+                  TextField(
+                    controller: reviewController,
+                    decoration: const InputDecoration(
+                      labelText: 'Write a review',
+                      labelStyle: TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: Colors.grey,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                      ),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await _rateBeer();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Review submitted!')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: const Text('Submit Review'),
+                  ),
                   const SizedBox(height: 24),
-                  // More Beers in Stock Section
                   const Text(
                     'More Beers in Stock',
                     style: TextStyle(
@@ -387,7 +478,7 @@ class BeerDetailScreen extends StatelessWidget {
                   SizedBox(
                     height: 150,
                     child: StreamBuilder<QuerySnapshot>(
-                      stream: BeerData.streamBeers(), // Fetch from Firebase
+                      stream: BeerData.streamBeers(),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
@@ -467,8 +558,7 @@ class BeerDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
-                  image: NetworkImage(
-                      imagePath), // Use NetworkImage for Firebase data
+                  image: NetworkImage(imagePath),
                   fit: BoxFit.cover,
                 ),
               ),
