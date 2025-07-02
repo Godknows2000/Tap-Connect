@@ -439,7 +439,7 @@ class _TrendingLocationsState extends State<TrendingLocations> {
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(10)),
                     image: DecorationImage(
-                      image: AssetImage(
+                      image: NetworkImage(
                         venue.imagePath?.isNotEmpty == true
                             ? venue.imagePath!
                             : 'assets/placeholder.png',
